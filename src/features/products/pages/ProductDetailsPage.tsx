@@ -18,6 +18,10 @@ import {
 } from "@fluentui/react-components";
 import { useProductQuery } from "../hooks/useProductQuery";
 import { useDeleteProductMutation } from "../hooks/useDeleteProductMutation";
+import {
+  canDeleteProducts,
+  canEditProducts,
+} from "../../../auth/permissions";
 
 const useStyles = makeStyles({
   body: {
@@ -170,18 +174,20 @@ export function ProductDetailsPage() {
               onClick={() =>
                 navigate(`/products/${product.id}/edit`, { state: { from } })
               }
-              disabled={busy}
+              disabled={busy || !canEditProducts}
             >
               Edit
             </Button>
 
-            <Button
-              appearance="secondary"
-              onClick={() => setConfirmDeleteOpen(true)}
-              disabled={busy}
-            >
-              Delete
-            </Button>
+            {canDeleteProducts && (
+              <Button
+                appearance="secondary"
+                onClick={() => setConfirmDeleteOpen(true)}
+                disabled={busy}
+              >
+                Delete
+              </Button>
+            )}
           </div>
         }
       />
@@ -243,7 +249,7 @@ export function ProductDetailsPage() {
         </div>
       </div>
 
-      <Dialog open={confirmDeleteOpen}>
+      <Dialog open={confirmDeleteOpen && canDeleteProducts}>
         <DialogSurface>
           <DialogBody>
             <DialogTitle>Delete product?</DialogTitle>

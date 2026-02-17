@@ -21,6 +21,7 @@ import {
 
 import { useProductQuery } from "../hooks/useProductQuery";
 import { useUpdateProductMutation } from "../hooks/useEditProductMutation";
+import { canEditProducts } from "../../../auth/permissions";
 
 const useStyles = makeStyles({
   body: {
@@ -97,6 +98,21 @@ export function ProductEditPage() {
   });
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+
+  if (!canEditProducts) {
+    return (
+      <Card>
+        <CardHeader header={<Text weight="semibold">Edit product</Text>} />
+        <Divider />
+        <div className={styles.loadingWrap}>
+          <Text>You do not have permission to edit products.</Text>
+          <div style={{ marginTop: 12 }}>
+            <Button onClick={goBack}>Back</Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   React.useEffect(() => {
     const p = productQuery.data;

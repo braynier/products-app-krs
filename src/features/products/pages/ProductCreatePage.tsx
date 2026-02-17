@@ -18,6 +18,7 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { useCreateProductMutation } from "../hooks/useCreateProductMutation";
+import { canCreateProducts } from "../../../auth/permissions";
 
 const useStyles = makeStyles({
   body: { padding: "16px", display: "grid", gap: "14px", maxWidth: "720px" },
@@ -80,6 +81,21 @@ export function ProductCreatePage() {
 
   const showError = (key: keyof TouchedState) =>
     submitAttempted || touched[key];
+
+  if (!canCreateProducts) {
+    return (
+      <Card>
+        <CardHeader header={<Text weight="semibold">Create product</Text>} />
+        <Divider />
+        <div className={styles.body}>
+          <Text>You do not have permission to create products.</Text>
+          <div className={styles.actions}>
+            <Button onClick={goBack}>Back</Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   const onClickCreate = () => {
     setSubmitAttempted(true);

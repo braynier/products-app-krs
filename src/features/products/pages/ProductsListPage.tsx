@@ -22,6 +22,11 @@ import { ProductsTitleSearch } from "../components/ProductsTitleSearch";
 import { ProductsCategoryFilter } from "../components/ProductsCategoryFilter";
 import { ProductsSort } from "../components/ProductsSort";
 import { useDeleteProductMutation } from "../hooks/useDeleteProductMutation";
+import {
+  canCreateProducts,
+  canDeleteProducts,
+  canEditProducts,
+} from "../../../auth/permissions";
 
 const useStyles = makeStyles({
   body: { padding: "16px", display: "grid", gap: "10px" },
@@ -125,13 +130,15 @@ export function ProductsListPage() {
         }
         action={
           <div className={styles.actions}>
-            <Button
-              appearance="primary"
-              onClick={() => navigate("/products/new", { state: { from } })}
-              disabled={busy}
-            >
-              Add
-            </Button>
+            {canCreateProducts && (
+              <Button
+                appearance="primary"
+                onClick={() => navigate("/products/new", { state: { from } })}
+                disabled={busy}
+              >
+                Add
+              </Button>
+            )}
             <Button onClick={() => refetch()} disabled={busy}>
               {isFetching ? "Refreshing..." : "Refresh"}
             </Button>
@@ -174,21 +181,23 @@ export function ProductsListPage() {
                 onClick={() =>
                   navigate(`/products/${p.id}/edit`, { state: { from } })
                 }
-                disabled={busy}
+                disabled={busy || !canEditProducts}
               >
                 Edit
               </Button>
 
-              <Button
-                appearance="secondary"
-                onClick={() => {
-                  setPendingDelete(p);
-                  setConfirmDeleteOpen(true);
-                }}
-                disabled={busy}
-              >
-                Delete
-              </Button>
+              {canDeleteProducts && (
+                <Button
+                  appearance="secondary"
+                  onClick={() => {
+                    setPendingDelete(p);
+                    setConfirmDeleteOpen(true);
+                  }}
+                  disabled={busy}
+                >
+                  Delete
+                </Button>
+              )}
             </div>
           </div>
         ))}
@@ -207,7 +216,7 @@ export function ProductsListPage() {
         </Text>
       )}
 
-      <Dialog open={confirmDeleteOpen}>
+      <Dialog open={confirmDeleteOpen && canDeleteProducts}>
         <DialogSurface>
           <DialogBody>
             <DialogTitle>Delete product?</DialogTitle>
