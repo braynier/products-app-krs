@@ -10,9 +10,10 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { useProductsQuery } from "../hooks/useProductsQuery";
-import type { Product } from "../types";
+import type { Product, SortBy, SortOrder } from "../types";
 import { ProductsTitleSearch } from "../components/ProductsTitleSearch";
 import { ProductsCategoryFilter } from "../components/ProductsCategoryFilter";
+import { ProductsSort } from "../components/ProductsSort";
 
 const useStyles = makeStyles({
   body: { padding: "16px", display: "grid", gap: "10px" },
@@ -45,9 +46,11 @@ export function ProductsListPage() {
 
   const q = searchParams.get("q") ?? "";
   const selectedCategory = searchParams.get("category") ?? "all";
+  const sortBy = (searchParams.get("sortBy") as SortBy | null) ?? undefined;
+  const order = (searchParams.get("order") as SortOrder | null) ?? undefined;
 
   const { data, isLoading, isError, error, refetch, isFetching } =
-    useProductsQuery(q, undefined, undefined);
+    useProductsQuery(q, sortBy, order);
 
   const products = data?.products ?? EMPTY;
 
@@ -112,6 +115,7 @@ export function ProductsListPage() {
       <div className={styles.filtersRow}>
         <ProductsTitleSearch disabled={isFetching} />
         <ProductsCategoryFilter categories={categories} disabled={isFetching} />
+        <ProductsSort disabled={isFetching} />
       </div>
 
       <Divider />
