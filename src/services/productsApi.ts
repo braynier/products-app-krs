@@ -63,3 +63,10 @@ export function updateProduct(id: number, input: UpdateProductInput) {
     body: JSON.stringify(input),
   });
 }
+
+export function deleteProduct(id: number) {
+  return httpJson<{ id: number; isDeleted?: boolean; deletedOn?: string }>(
+    `https://dummyjson.com/products/${id}`,
+    { method: "DELETE" },
+  );
+}

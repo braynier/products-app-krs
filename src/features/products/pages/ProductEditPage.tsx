@@ -73,7 +73,6 @@ export function ProductEditPage() {
   const navigate = useNavigate();
   const params = useParams();
   const location = useLocation();
-
   const from = (location.state as any)?.from as string | undefined;
 
   const goBack = () => {

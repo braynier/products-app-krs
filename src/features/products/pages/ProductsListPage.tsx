@@ -1,9 +1,16 @@
+import * as React from "react";
 import { useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Button,
   Card,
   CardHeader,
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
   Divider,
   Spinner,
   Text,
@@ -14,6 +21,7 @@ import type { Product, SortBy, SortOrder } from "../types";
 import { ProductsTitleSearch } from "../components/ProductsTitleSearch";
 import { ProductsCategoryFilter } from "../components/ProductsCategoryFilter";
 import { ProductsSort } from "../components/ProductsSort";
+import { useDeleteProductMutation } from "../hooks/useDeleteProductMutation";
 
 const useStyles = makeStyles({
   body: { padding: "16px", display: "grid", gap: "10px" },
@@ -35,6 +43,8 @@ const useStyles = makeStyles({
     flexWrap: "wrap",
   },
   actions: { display: "flex", gap: "8px" },
+  rowActions: { display: "flex", gap: "8px", flexWrap: "wrap" },
+  errorText: { padding: "0 16px 16px" },
 });
 
 const EMPTY: Product[] = [];
@@ -42,7 +52,10 @@ const EMPTY: Product[] = [];
 export function ProductsListPage() {
   const styles = useStyles();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+
+  const from = location.pathname + location.search;
 
   const q = searchParams.get("q") ?? "";
   const selectedCategory = searchParams.get("category") ?? "all";
@@ -51,6 +64,15 @@ export function ProductsListPage() {
 
   const { data, isLoading, isError, error, refetch, isFetching } =
     useProductsQuery(q, sortBy, order);
+
+  const deleteMutation = useDeleteProductMutation();
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
+  const [pendingDelete, setPendingDelete] = React.useState<Product | null>(
+    null,
+  );
+
+  // React Query v4: use isLoading, not isPending
+  const busy = isFetching || deleteMutation.isLoading;
 
   const products = data?.products ?? EMPTY;
 
@@ -105,11 +127,12 @@ export function ProductsListPage() {
           <div className={styles.actions}>
             <Button
               appearance="primary"
-              onClick={() => navigate("/products/new")}
+              onClick={() => navigate("/products/new", { state: { from } })}
+              disabled={busy}
             >
               Add
             </Button>
-            <Button onClick={() => refetch()} disabled={isFetching}>
+            <Button onClick={() => refetch()} disabled={busy}>
               {isFetching ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
@@ -119,9 +142,9 @@ export function ProductsListPage() {
       <Divider />
 
       <div className={styles.filtersRow}>
-        <ProductsTitleSearch disabled={isFetching} />
-        <ProductsCategoryFilter categories={categories} disabled={isFetching} />
-        <ProductsSort disabled={isFetching} />
+        <ProductsTitleSearch disabled={busy} />
+        <ProductsCategoryFilter categories={categories} disabled={busy} />
+        <ProductsSort disabled={busy} />
       </div>
 
       <Divider />
@@ -135,15 +158,36 @@ export function ProductsListPage() {
                 €{p.price} · {p.category} · Stock: {p.stock}
               </Text>
             </div>
-            <div>
+
+            <div className={styles.rowActions}>
               <Button
                 appearance="primary"
-                onClick={() => navigate(`/products/${p.id}`)}
+                onClick={() =>
+                  navigate(`/products/${p.id}`, { state: { from } })
+                }
+                disabled={busy}
               >
                 Details
               </Button>
-              <Button onClick={() => navigate(`/products/${p.id}/edit`)}>
+
+              <Button
+                onClick={() =>
+                  navigate(`/products/${p.id}/edit`, { state: { from } })
+                }
+                disabled={busy}
+              >
                 Edit
+              </Button>
+
+              <Button
+                appearance="secondary"
+                onClick={() => {
+                  setPendingDelete(p);
+                  setConfirmDeleteOpen(true);
+                }}
+                disabled={busy}
+              >
+                Delete
               </Button>
             </div>
           </div>
@@ -153,6 +197,59 @@ export function ProductsListPage() {
           <Text>No products match your current search/filter.</Text>
         )}
       </div>
+
+      {deleteMutation.isError && (
+        <Text className={styles.errorText}>
+          Failed to delete:{" "}
+          {deleteMutation.error instanceof Error
+            ? deleteMutation.error.message
+            : "Unknown error"}
+        </Text>
+      )}
+
+      <Dialog open={confirmDeleteOpen}>
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>Delete product?</DialogTitle>
+            <DialogContent>
+              <Text>
+                Are you sure you want to delete{" "}
+                <b>{pendingDelete?.title ?? "this product"}</b>? This can’t be
+                undone.
+              </Text>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                appearance="secondary"
+                onClick={() => {
+                  if (deleteMutation.isPending) return;
+                  setConfirmDeleteOpen(false);
+                  setPendingDelete(null);
+                }}
+                disabled={deleteMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                appearance="primary"
+                disabled={!pendingDelete || deleteMutation.isPending}
+                onClick={() => {
+                  if (!pendingDelete) return;
+
+                  deleteMutation.mutate(pendingDelete.id, {
+                    onSuccess: () => {
+                      setConfirmDeleteOpen(false);
+                      setPendingDelete(null);
+                    },
+                  });
+                }}
+              >
+                {deleteMutation.isPending ? "Deleting..." : "Confirm"}
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
     </Card>
   );
 }
