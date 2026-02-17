@@ -16,7 +16,7 @@ function buildSortParams(sortBy?: SortBy, order?: SortOrder) {
   return `&${sp.toString()}`;
 }
 
-const DEFAULT_LIMIT = 100;
+const DEFAULT_LIMIT = 0;
 
 export function getProducts(sortBy?: SortBy, order?: SortOrder) {
   return httpJson<ProductsResponse>(
