@@ -1,3 +1,5 @@
+import * as React from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Button,
   Card,
@@ -9,7 +11,7 @@ import {
 } from "@fluentui/react-components";
 import { useProductsQuery } from "../hooks/useProductsQuery";
 import type { Product } from "../types";
-import { useNavigate } from "react-router-dom";
+import { ProductsTitleSearch } from "../components/ProductsTitleSearch";
 
 const useStyles = makeStyles({
   body: { padding: "16px", display: "grid", gap: "10px" },
@@ -23,6 +25,14 @@ const useStyles = makeStyles({
     borderRadius: "10px",
   },
   rowLeft: { display: "grid", gap: "4px" },
+  filtersRow: {
+    padding: "16px",
+    display: "flex",
+    gap: "16px",
+    alignItems: "end",
+    flexWrap: "wrap",
+  },
+  actions: { display: "flex", gap: "8px", flexWrap: "wrap" },
 });
 
 const EMPTY: Product[] = [];
@@ -30,12 +40,12 @@ const EMPTY: Product[] = [];
 export function ProductsListPage() {
   const styles = useStyles();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const { data, isLoading, isError, error } = useProductsQuery(
-    "",
-    undefined,
-    undefined,
-  );
+  const q = searchParams.get("q") ?? "";
+
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    useProductsQuery(q, undefined, undefined);
 
   const products = data?.products ?? EMPTY;
 
@@ -59,6 +69,9 @@ export function ProductsListPage() {
         <Divider />
         <div className={styles.body}>
           <Text>Failed to load products: {message}</Text>
+          <Button appearance="primary" onClick={() => refetch()}>
+            Retry
+          </Button>
         </div>
       </Card>
     );
@@ -69,8 +82,23 @@ export function ProductsListPage() {
       <CardHeader
         header={<Text weight="semibold">Products</Text>}
         description={<Text size={200}>{products.length} items</Text>}
+        action={
+          <div className={styles.actions}>
+            <Button onClick={() => refetch()} disabled={isFetching}>
+              {isFetching ? "Refreshing..." : "Refresh"}
+            </Button>
+          </div>
+        }
       />
+
       <Divider />
+
+      <div className={styles.filtersRow}>
+        <ProductsTitleSearch disabled={isFetching} />
+      </div>
+
+      <Divider />
+
       <div className={styles.body}>
         {products.map((p) => (
           <div key={p.id} className={styles.row}>
@@ -80,6 +108,7 @@ export function ProductsListPage() {
                 €{p.price} · {p.category} · Stock: {p.stock}
               </Text>
             </div>
+
             <Button
               appearance="primary"
               onClick={() => navigate(`/products/${p.id}`)}
@@ -89,7 +118,7 @@ export function ProductsListPage() {
           </div>
         ))}
 
-        {products.length === 0 && <Text>No products found.</Text>}
+        {products.length === 0 && <Text>No products match your search.</Text>}
       </div>
     </Card>
   );
