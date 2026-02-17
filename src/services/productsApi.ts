@@ -16,6 +16,11 @@ export type CreateProductInput = {
   thumbnail?: string;
 };
 
+export type UpdateProductInput = {
+  price: number;
+  stock: number;
+};
+
 const BASE_URL = "https://dummyjson.com";
 
 function buildSortParams(sortBy?: SortBy, order?: SortOrder) {
@@ -48,6 +53,13 @@ export function getProductById(id: number) {
 export function createProduct(input: CreateProductInput) {
   return httpJson<Product>("https://dummyjson.com/products/add", {
     method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateProduct(id: number, input: UpdateProductInput) {
+  return httpJson<Product>(`https://dummyjson.com/products/${id}`, {
+    method: "PUT",
     body: JSON.stringify(input),
   });
 }

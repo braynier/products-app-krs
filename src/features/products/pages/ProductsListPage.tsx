@@ -135,13 +135,17 @@ export function ProductsListPage() {
                 €{p.price} · {p.category} · Stock: {p.stock}
               </Text>
             </div>
-
-            <Button
-              appearance="primary"
-              onClick={() => navigate(`/products/${p.id}`)}
-            >
-              Details
-            </Button>
+            <div>
+              <Button
+                appearance="primary"
+                onClick={() => navigate(`/products/${p.id}`)}
+              >
+                Details
+              </Button>
+              <Button onClick={() => navigate(`/products/${p.id}/edit`)}>
+                Edit
+              </Button>
+            </div>
           </div>
         ))}
 
