@@ -34,7 +34,7 @@ const useStyles = makeStyles({
     alignItems: "end",
     flexWrap: "wrap",
   },
-  actions: { display: "flex", gap: "8px", flexWrap: "wrap" },
+  actions: { display: "flex", gap: "8px" },
 });
 
 const EMPTY: Product[] = [];
@@ -103,6 +103,12 @@ export function ProductsListPage() {
         }
         action={
           <div className={styles.actions}>
+            <Button
+              appearance="primary"
+              onClick={() => navigate("/products/new")}
+            >
+              Add
+            </Button>
             <Button onClick={() => refetch()} disabled={isFetching}>
               {isFetching ? "Refreshing..." : "Refresh"}
             </Button>

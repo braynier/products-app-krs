@@ -6,6 +6,16 @@ import type {
   SortOrder,
 } from "../features/products/types";
 
+export type CreateProductInput = {
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  stock: number;
+  brand?: string;
+  thumbnail?: string;
+};
+
 const BASE_URL = "https://dummyjson.com";
 
 function buildSortParams(sortBy?: SortBy, order?: SortOrder) {
@@ -33,4 +43,11 @@ export function searchProducts(q: string, sortBy?: SortBy, order?: SortOrder) {
 
 export function getProductById(id: number) {
   return httpJson<Product>(`${BASE_URL}/products/${id}`);
+}
+
+export function createProduct(input: CreateProductInput) {
+  return httpJson<Product>("https://dummyjson.com/products/add", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }

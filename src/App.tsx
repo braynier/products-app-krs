@@ -8,6 +8,7 @@ import { ErrorPage } from "./ui/ErrorPage";
 import { ProductsListPage } from "./features/products/pages/ProductsListPage";
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { ProductDetailsPage } from "./features/products/pages/ProductDetailsPage";
+import { ProductCreatePage } from "./features/products/pages/ProductCreatePage";
 
 const queryClient = makeQueryClient();
 
@@ -20,6 +21,7 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route index element={<Navigate replace to="/products" />} />
               <Route path="/products" element={<ProductsListPage />} />
+              <Route path="/products/new" element={<ProductCreatePage />} />
               <Route path="/products/:id" element={<ProductDetailsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
