@@ -70,7 +70,6 @@ export function ProductDetailsPage() {
 
   const goBack = () => {
     if (from) navigate(from);
-    else if (window.history.length > 1) navigate(-1);
     else navigate("/products");
   };
 
