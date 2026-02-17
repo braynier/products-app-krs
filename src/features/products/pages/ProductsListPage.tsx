@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   CardHeader,
   Divider,
@@ -8,6 +9,7 @@ import {
 } from "@fluentui/react-components";
 import { useProductsQuery } from "../hooks/useProductsQuery";
 import type { Product } from "../types";
+import { useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles({
   body: { padding: "16px", display: "grid", gap: "10px" },
@@ -27,6 +29,7 @@ const EMPTY: Product[] = [];
 
 export function ProductsListPage() {
   const styles = useStyles();
+  const navigate = useNavigate();
 
   const { data, isLoading, isError, error } = useProductsQuery(
     "",
@@ -77,6 +80,12 @@ export function ProductsListPage() {
                 €{p.price} · {p.category} · Stock: {p.stock}
               </Text>
             </div>
+            <Button
+              appearance="primary"
+              onClick={() => navigate(`/products/${p.id}`)}
+            >
+              Details
+            </Button>
           </div>
         ))}
 
