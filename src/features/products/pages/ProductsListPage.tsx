@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Button,
@@ -12,6 +12,7 @@ import {
 import { useProductsQuery } from "../hooks/useProductsQuery";
 import type { Product } from "../types";
 import { ProductsTitleSearch } from "../components/ProductsTitleSearch";
+import { ProductsCategoryFilter } from "../components/ProductsCategoryFilter";
 
 const useStyles = makeStyles({
   body: { padding: "16px", display: "grid", gap: "10px" },
@@ -43,11 +44,22 @@ export function ProductsListPage() {
   const [searchParams] = useSearchParams();
 
   const q = searchParams.get("q") ?? "";
+  const selectedCategory = searchParams.get("category") ?? "all";
 
   const { data, isLoading, isError, error, refetch, isFetching } =
     useProductsQuery(q, undefined, undefined);
 
   const products = data?.products ?? EMPTY;
+
+  const categories = useMemo(() => {
+    const set = new Set(products.map((p) => p.category).filter(Boolean));
+    return ["all", ...Array.from(set).sort()];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === "all") return products;
+    return products.filter((p) => p.category === selectedCategory);
+  }, [products, selectedCategory]);
 
   if (isLoading) {
     return (
@@ -81,7 +93,11 @@ export function ProductsListPage() {
     <Card>
       <CardHeader
         header={<Text weight="semibold">Products</Text>}
-        description={<Text size={200}>{products.length} items</Text>}
+        description={
+          <Text size={200}>
+            {filteredProducts.length} shown / {products.length} total
+          </Text>
+        }
         action={
           <div className={styles.actions}>
             <Button onClick={() => refetch()} disabled={isFetching}>
@@ -95,12 +111,13 @@ export function ProductsListPage() {
 
       <div className={styles.filtersRow}>
         <ProductsTitleSearch disabled={isFetching} />
+        <ProductsCategoryFilter categories={categories} disabled={isFetching} />
       </div>
 
       <Divider />
 
       <div className={styles.body}>
-        {products.map((p) => (
+        {filteredProducts.map((p) => (
           <div key={p.id} className={styles.row}>
             <div className={styles.rowLeft}>
               <Text weight="semibold">{p.title}</Text>
@@ -118,7 +135,9 @@ export function ProductsListPage() {
           </div>
         ))}
 
-        {products.length === 0 && <Text>No products match your search.</Text>}
+        {filteredProducts.length === 0 && (
+          <Text>No products match your current search/filter.</Text>
+        )}
       </div>
     </Card>
   );
