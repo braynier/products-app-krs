@@ -85,6 +85,7 @@ export function ProductEditPage() {
   const validId = Number.isFinite(productId) && productId > 0;
 
   const productQuery = useProductQuery(productId);
+  const product = productQuery.data;
 
   const updateMutation = useUpdateProductMutation(productId);
 
@@ -98,6 +99,38 @@ export function ProductEditPage() {
   });
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const busy = productQuery.isFetching || updateMutation.isPending;
+
+  const price = parseNumber(priceStr);
+  const stock = parseNumber(stockStr);
+
+  const priceOk = price !== null && price >= 0;
+  const stockOk = stock !== null && stock >= 0;
+
+  const showErr = (k: keyof Touched) => submitAttempted || touched[k];
+
+  const hasChanges =
+    String(product?.price) !== priceStr.trim() ||
+    String(product?.stock) !== stockStr.trim();
+
+  const formOk = priceOk && stockOk && hasChanges;
+
+  const onClickSave = () => {
+    setSubmitAttempted(true);
+    if (!priceOk || !stockOk) return;
+    if (!hasChanges) return;
+    setConfirmOpen(true);
+  };
+
+  React.useEffect(() => {
+    const p = productQuery.data;
+    if (!p) return;
+
+    setPriceStr(String(p.price));
+    setStockStr(String(p.stock));
+    setSubmitAttempted(false);
+    setTouched({ price: false, stock: false });
+  }, [productQuery.data]);
 
   if (!canEditProducts) {
     return (
@@ -113,15 +146,6 @@ export function ProductEditPage() {
       </Card>
     );
   }
-
-  React.useEffect(() => {
-    const p = productQuery.data;
-    if (!p) return;
-    setPriceStr(String(p.price));
-    setStockStr(String(p.stock));
-    setSubmitAttempted(false);
-    setTouched({ price: false, stock: false });
-  }, [productQuery.data?.id]);
 
   if (!validId) {
     return (
@@ -174,7 +198,6 @@ export function ProductEditPage() {
     );
   }
 
-  const product = productQuery.data;
   if (!product) {
     return (
       <Card>
@@ -189,29 +212,6 @@ export function ProductEditPage() {
       </Card>
     );
   }
-
-  const busy = productQuery.isFetching || updateMutation.isLoading;
-
-  const price = parseNumber(priceStr);
-  const stock = parseNumber(stockStr);
-
-  const priceOk = price !== null && price >= 0;
-  const stockOk = stock !== null && stock >= 0;
-
-  const showErr = (k: keyof Touched) => submitAttempted || touched[k];
-
-  const hasChanges =
-    String(product.price) !== priceStr.trim() ||
-    String(product.stock) !== stockStr.trim();
-
-  const formOk = priceOk && stockOk && hasChanges;
-
-  const onClickSave = () => {
-    setSubmitAttempted(true);
-    if (!priceOk || !stockOk) return;
-    if (!hasChanges) return;
-    setConfirmOpen(true);
-  };
 
   return (
     <Card>
@@ -256,7 +256,6 @@ export function ProductEditPage() {
         )}
 
         <div className={styles.details}>
-          {/* Read-only info like details page */}
           <div className={styles.kv}>
             <Text weight="semibold">Category</Text>
             <Text>{product.category}</Text>
@@ -278,7 +277,6 @@ export function ProductEditPage() {
 
           <Divider style={{ margin: "8px 0" }} />
 
-          {/* Editable fields */}
           <Text weight="semibold">Editable fields</Text>
 
           <div className={styles.row2}>
@@ -339,7 +337,6 @@ export function ProductEditPage() {
         </div>
       </div>
 
-      {/* Confirmation-only modal */}
       <Dialog open={confirmOpen}>
         <DialogSurface>
           <DialogBody>

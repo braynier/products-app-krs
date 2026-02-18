@@ -76,8 +76,7 @@ export function ProductsListPage() {
     null,
   );
 
-  // React Query v4: use isLoading, not isPending
-  const busy = isFetching || deleteMutation.isLoading;
+  const busy = isFetching || deleteMutation.isPending;
 
   const products = data?.products ?? EMPTY;
 

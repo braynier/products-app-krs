@@ -18,10 +18,7 @@ import {
 } from "@fluentui/react-components";
 import { useProductQuery } from "../hooks/useProductQuery";
 import { useDeleteProductMutation } from "../hooks/useDeleteProductMutation";
-import {
-  canDeleteProducts,
-  canEditProducts,
-} from "../../../auth/permissions";
+import { canDeleteProducts, canEditProducts } from "../../../auth/permissions";
 
 const useStyles = makeStyles({
   body: {
@@ -85,9 +82,10 @@ export function ProductDetailsPage() {
     refetch,
     isFetching,
   } = useProductQuery(productId);
-
   const deleteMutation = useDeleteProductMutation();
+
   const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
+  const busy = isFetching || deleteMutation.isPending;
 
   if (!validId) {
     return (
@@ -120,6 +118,7 @@ export function ProductDetailsPage() {
 
   if (isError) {
     const message = error instanceof Error ? error.message : "Unknown error";
+
     return (
       <Card>
         <CardHeader header={<Text weight="semibold">Product details</Text>} />
@@ -151,8 +150,6 @@ export function ProductDetailsPage() {
       </Card>
     );
   }
-
-  const busy = isFetching || deleteMutation.isLoading;
 
   return (
     <Card>

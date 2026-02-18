@@ -82,6 +82,12 @@ export function ProductCreatePage() {
   const showError = (key: keyof TouchedState) =>
     submitAttempted || touched[key];
 
+  const onClickCreate = () => {
+    setSubmitAttempted(true);
+    if (!formOk) return;
+    setConfirmOpen(true);
+  };
+
   if (!canCreateProducts) {
     return (
       <Card>
@@ -96,12 +102,6 @@ export function ProductCreatePage() {
       </Card>
     );
   }
-
-  const onClickCreate = () => {
-    setSubmitAttempted(true);
-    if (!formOk) return;
-    setConfirmOpen(true);
-  };
 
   return (
     <Card>
@@ -224,7 +224,6 @@ export function ProductCreatePage() {
         {busy && <Spinner label="Creating..." />}
       </div>
 
-      {/* Confirmation-only modal */}
       <Dialog open={confirmOpen}>
         <DialogSurface>
           <DialogBody>
