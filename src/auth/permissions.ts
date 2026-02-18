@@ -1,6 +1,6 @@
 export type UserRole = "Manager" | "Editor" | "Viewer";
 
-export const currentUserRole: UserRole = "Editor";
+export const currentUserRole: UserRole = "Manager";
 
 function getProductPermissions(role: UserRole) {
   return {

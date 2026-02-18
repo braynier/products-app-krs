@@ -176,14 +176,16 @@ export function ProductsListPage() {
                 Details
               </Button>
 
-              <Button
-                onClick={() =>
-                  navigate(`/products/${p.id}/edit`, { state: { from } })
-                }
-                disabled={busy || !canEditProducts}
-              >
-                Edit
-              </Button>
+              {canEditProducts && (
+                <Button
+                  onClick={() =>
+                    navigate(`/products/${p.id}/edit`, { state: { from } })
+                  }
+                  disabled={busy}
+                >
+                  Edit
+                </Button>
+              )}
 
               {canDeleteProducts && (
                 <Button

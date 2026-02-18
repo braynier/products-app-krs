@@ -166,15 +166,17 @@ export function ProductDetailsPage() {
               {isFetching ? "Refreshing..." : "Refresh"}
             </Button>
 
-            <Button
-              appearance="primary"
-              onClick={() =>
-                navigate(`/products/${product.id}/edit`, { state: { from } })
-              }
-              disabled={busy || !canEditProducts}
-            >
-              Edit
-            </Button>
+            {canEditProducts && (
+              <Button
+                appearance="primary"
+                onClick={() =>
+                  navigate(`/products/${product.id}/edit`, { state: { from } })
+                }
+                disabled={busy}
+              >
+                Edit
+              </Button>
+            )}
 
             {canDeleteProducts && (
               <Button
